@@ -10,9 +10,9 @@
 #                                                                              #
 # **************************************************************************** #
 
-
-
+CC = cc
 NAME = ./libft.a
+BNAME = ./libft_bonus.a
 FILES = ft_isalpha.c \
 		ft_isdigit.c \
 		ft_isalnum.c \
@@ -60,29 +60,28 @@ BFILES = ft_lstnew.c \
 
 OBJS = $(FILES:.c=.o)
 BOBJS = $(BFILES:.c=.o)
-
 FLAGS = -Wall -Wextra -Werror
 
 all:	$(NAME)
 
-$(OBJS): %.o: %.c
-	gcc $(FLAGS) -c $< -o $@
+$(OBJS):
+	@$(CC) $(FLAGS) -c $(FILES)
 
-$(BOBJS): %.o: %.c
-	gcc $(FLAGS) -c $< -o $@
+$(BOBJS):
+	@$(CC) $(FLAGS) -c $(BFILES)
 
 $(NAME): $(OBJS)
-	ar rc $(NAME) $(OBJS)
+	@ar rc $(NAME) $(OBJS)
 
 bonus: $(OBJS) $(BOBJS)
-	ar rc $(NAME) $(OBJS) $(BOBJS)
+	@ar rc $(NAME) $(OBJS) $(BOBJS)
 
 clean:
-	/bin/rm -f $(OBJS) $(BOBJS)
+	@/bin/rm -f $(OBJS) $(BOBJS)
 
 fclean:	clean
-	/bin/rm -f $(NAME)
+	@/bin/rm -f $(NAME)
 
 re:	fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean bonus fclean re
