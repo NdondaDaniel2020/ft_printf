@@ -12,20 +12,6 @@
 
 #include "ft_printf_bonus.h"
 
-int add_prefix(const char *str, int i, int len)
-{
-	if (str[i + 1] == 'x' || str[i + 1] == 'X')
-	{
-		len += 2;
-		ft_putchar_fd('0', 1);
-		if (str[i + 1] == 'x')
-			ft_putchar_fd('x', 1);
-		if (str[i + 1] == 'X')
-			ft_putchar_fd('X', 1);
-	}
-	return (len);
-}
-
 int	ft_print_pars(const char c, va_list args, int len)
 {
 	if (c == 'd' || c == 'i')

@@ -13,6 +13,100 @@
 #include "ft_printf_bonus.h"
 #include <stdio.h>
 
+static int	digit_counter(long int n)
+{
+	long int	i;
+
+	i = 0;
+	if (n < 0)
+	{
+		n *= -1;
+		i++;
+	}
+	if (n == 0)
+		return (1);
+	while (n > 0)
+	{
+		n /= 10;
+		i++;
+	}
+	return (i);
+}
+
+int add_prefix(const char *str, int i, int len)
+{
+	if (str[i + 1] == 'x' || str[i + 1] == 'X')
+	{
+		len += 2;
+		ft_putchar_fd('0', 1);
+		if (str[i + 1] == 'x')
+			ft_putchar_fd('x', 1);
+		if (str[i + 1] == 'X')
+			ft_putchar_fd('X', 1);
+	}
+	return (len);
+}
+
+int add_space(const char *str, int i, va_list args, int len)
+{
+	int			re;
+	int			len_arg;
+	char		chr_arg;
+	char		*str_arg;
+	long long	value_arg;
+
+	value_arg = 0;
+	str_arg = NULL;
+	re = str[i] - '0';
+	while (ft_isdigit(str[i + 1]))
+	{
+		re = (re * 10) + (str[i + 1] - '0');
+		i++;
+	}
+	if (str[i + 1] == 'c')
+	{
+		chr_arg = va_arg(args, int);
+		len_arg = 1;
+	}
+	if (str[i + 1] == 'i' || str[i + 1] == 'd' || str[i + 1] == 'p'
+	 || str[i + 1] == 'x' || str[i + 1] == 'X' || str[i + 1] == 'u')
+	{
+		value_arg = va_arg(args, unsigned long long);
+		len_arg = digit_counter(value_arg);
+		if (str[i + 1] == 'p')
+			len_arg--;
+	}
+	if (str[i + 1] == 's')
+	{
+		str_arg = va_arg(args, char *);
+		len_arg = ft_strlen(str_arg);
+	}
+
+	len_arg = re - len_arg;
+	while (len_arg > 0)
+	{
+		ft_putchar_fd(' ', 1);
+		len_arg--;
+	}
+
+	if (str[i + 1] == 'c')
+		len = ft_putchar(chr_arg, len);
+	if (str[i + 1] == 's')
+		len = ft_putstr(str_arg, len);
+	if (str[i + 1] == 'u')
+		len = ft_put_unsigned(value_arg, len);
+	if (str[i + 1] == 'i' || str[i + 1] == 'd')
+		len = ft_putnbr_base(value_arg, 10, 0, len);
+	if (str[i + 1] == 'p')
+		len = ft_put_end_mem(value_arg, len);
+	if (str[i + 1] == 'x')
+		len = ft_putnbr_base(value_arg, 16, 0, len);
+	if (str[i + 1] == 'X')
+		len = ft_putnbr_base(value_arg, 16, 1, len);
+
+	return ((re -1) + len);
+}
+
 int	format_specifiers(const char *str, int *i, va_list args, int len)
 {
 	if (str[*i] == '#')
@@ -20,6 +114,13 @@ int	format_specifiers(const char *str, int *i, va_list args, int len)
 		len = add_prefix(str, *i, len);
 		(*i)++;
 		len = ft_print_pars(str[*i], args, len);
+	}
+	if (ft_isdigit(str[*i]) && str[*i] != '0')
+	{
+		len = add_space(str, *i, args, len);
+		while (ft_isdigit(str[*i + 1]))
+			(*i)++;
+		(*i)++;
 	}
 	else
 		len = ft_print_pars(str[*i], args, len);
