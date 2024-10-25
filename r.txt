@@ -169,3 +169,4 @@ No *buscar(No *raiz, int value)
 		return buscar(raiz->direita, value);
 	
 }
+
