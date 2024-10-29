@@ -55,6 +55,34 @@ static void	add_format_plus(t_data *data, int *i)
 	data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
 }
 
+static void	add_format_comb_point(t_data *data, int *i)
+{
+	int			len;
+	int			value;
+	va_list 	cpy_arg;
+
+	va_copy(cpy_arg, data->args);
+	value = va_arg(cpy_arg, int);
+	if (data->str[*i] == 'x' || data->str[*i] == 'X' || data->str[*i] == 'p')
+		len = ft_nblen(value, 16);
+	else if (data->str[*i] == 'i' || data->str[*i] == 'd')
+		len = ft_nblen(value, 10);
+	if (value >= 0)
+	{
+		data->number_str -= len;
+		if (data->number_str)
+		{
+			while (data->number_str--)
+			{
+				data->len_caraters++;
+				ft_putchar_fd('0', 1);
+			}
+		}
+	}
+	data->len_caraters = ft_print_pars(data->str[*i],
+		data->args, data->len_caraters, 0);
+	va_end(cpy_arg);
+}
 
 
 
@@ -231,7 +259,6 @@ static void add_format_comb_number_reverse(t_data *data, int *i)
 
 
 
-
 static void add_format_comb_str(t_data *data, int *i)
 {
 	int			len;
@@ -278,35 +305,6 @@ static void add_format_comb_str_reverse(t_data *data, int *i)
 	va_end(cpy_arg);
 }
 
-
-
-static void	add_format_comb_point(t_data *data, int *i)
-{
-	int			len;
-	int			value;
-	va_list 	cpy_arg;
-
-	va_copy(cpy_arg, data->args);
-	value = va_arg(cpy_arg, int);
-	if (data->str[*i] == 'x' || data->str[*i] == 'X' || data->str[*i] == 'p')
-		len = ft_nblen(value, 16);
-	else if (data->str[*i] == 'i' || data->str[*i] == 'd')
-		len = ft_nblen(value, 10);
-	if (value >= 0)
-	{
-		data->number_str -= len;
-		if (data->number_str)
-		{
-			while (data->number_str--)
-			{
-				data->len_caraters++;
-				ft_putchar_fd('0', 1);
-			}
-		}
-	}
-	data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
-	va_end(cpy_arg);
-}
 
 
 static void	add_format_comb_hastag(t_data *data, int *i)
@@ -464,37 +462,71 @@ static void add_format_comb_hastag_reverse(t_data *data, int *i)
 	va_end(cpy_arg);
 }
 
+
+
+
+static bool condition_1(t_data *data, int *i)
+{
+	if (data->space && !data->plas && !data->negative && !data->zero
+		&& !data->point && !data->hastag && !data->number)
+		return (true);
+	else if (data->plas && !data->space && !data->negative
+		&& !data->zero && !data->point && !data->hastag && !data->number
+		&& (data->str[*i] == 'i' || data->str[*i] == 'd' || data->str[*i] == 'p'))
+		return (true);
+	else if (data->number && !data->negative && !data->hastag
+		&& data->str[*i] != 's' && data->str[*i] != 'c')
+		return (true);
+	else if (data->number && data->negative && !data->hastag
+		&& data->str[*i] != 's' && data->str[*i] != 'c')
+		return (true);
+	else if (data->point && data->number_str && !data->hastag)
+		return (true);
+	return (false);
+}
+
+static bool condition_2(t_data *data, int *i)
+{
+	if ((data->number || data->number_str) && !data->negative && !data->hastag
+		&& (data->str[*i] == 's' || data->str[*i] == 'c'))
+		return (true);
+	else if ((data->number || data->number_str) && data->negative &&
+		!data->hastag && (data->str[*i] == 's' || data->str[*i] == 'c'))
+		return (true);
+	else if (data->hastag && !data->negative && (data->str[*i] == 'X'
+		|| data->str[*i] == 'x'))
+		return (true);
+	else if (data->hastag && data->negative && (data->str[*i] == 'X'
+		|| data->str[*i] == 'x'))
+		return (true);
+	return (false);
+}
+
+
+
+
 void	print_format(t_data *data, int *i)
 {
-	if (data->space && !data->plas && !data->negative && !data->zero && !data->point && !data->hastag && !data->number)
+	if (condition_1(data, i))
 		add_format_one_space(data, i);
-	else if (data->plas && !data->space && !data->negative && !data->zero && !data->point && !data->hastag && !data->number && (data->str[*i] == 'i' || data->str[*i] == 'd' || data->str[*i] == 'p'))
+	else if (condition_1(data, i))
 		add_format_plus(data, i);
-	
-	
-	else if (data->number && !data->negative && !data->hastag && data->str[*i] != 's' && data->str[*i] != 'c')
+	else if (condition_1(data, i))
 		add_format_comb_number(data, i);
-	else if (data->number && data->negative && !data->hastag && data->str[*i] != 's' && data->str[*i] != 'c')
+	else if (condition_1(data, i))
 		add_format_comb_number_reverse(data, i);
-
-
-	else if (data->point && data->number_str && !data->hastag)
+	else if (condition_1(data, i))
 		add_format_comb_point(data, i);
 
 
-	else if ((data->number || data->number_str) && !data->negative && !data->hastag && (data->str[*i] == 's' || data->str[*i] == 'c'))
+	else if (condition_2(data, i))
 		add_format_comb_str(data, i);
-	else if ((data->number || data->number_str) && data->negative && !data->hastag && (data->str[*i] == 's' || data->str[*i] == 'c'))
+	else if (condition_2(data, i))
 		add_format_comb_str_reverse(data, i);
-	
-
-	
-	else if (data->hastag && !data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
+	else if (condition_2(data, i))
 		add_format_comb_hastag(data, i);
-	
-	else if (data->hastag && data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
+	else if (condition_2(data, i))
 		add_format_comb_hastag_reverse(data, i);
-
 	else
 		data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
 }
