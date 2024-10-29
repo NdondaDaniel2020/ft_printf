@@ -309,12 +309,163 @@ static void	add_format_comb_point(t_data *data, int *i)
 }
 
 
+static void	add_format_comb_hastag(t_data *data, int *i)
+{
+	int			len;
+	int			len_cpy;
+	int			value;
+	bool		printed;
+	va_list 	cpy_arg;
 
+	printed = false;
+	va_copy(cpy_arg, data->args);
+	value = va_arg(cpy_arg, int);
+	len = ft_nblen(value, 16);
+	len_cpy = len;
+	if (data->number && !data->number_str && !data->zero)
+	{
+		len += 2;
+		printed = true;
+		data->number -= len;
+		while (data->number)
+		{
+			data->number--;
+			data->len_caraters++;
+			ft_putchar_fd(' ', 1);
+		}
+	}
+	if (data->number && data->number_str && data->point)
+	{
+		if (data->number_str > len_cpy)
+			data->number = (data->number - 2) - data->number_str;
+		else
+			data->number = (data->number - 2) - len_cpy;
+		while (data->number > 0)
+		{
+			data->number--;
+			data->len_caraters++;
+			ft_putchar_fd(' ', 1);
+		}
+	}
+	data->len_caraters += 2;
+	if (data->str[*i] == 'x')
+	{
+		ft_putchar_fd('0', 1);
+		ft_putchar_fd('x', 1);
+	}
+	else
+	{
+		ft_putchar_fd('0', 1);
+		ft_putchar_fd('X', 1);
+	}
+	if (data->number && !printed && !data->number_str)
+	{
+		len += 2;
+		data->number -= len;
+		while (data->number > 0)
+		{
+			data->number--;
+			data->len_caraters++;
+			ft_putchar_fd('0', 1);
+		}
+	}
+	if (data->number_str && data->point && !data->number)
+	{
+		data->number_str -= len;
+		while (data->number_str > 0)
+		{
+			data->number_str--;
+			data->len_caraters++;
+			ft_putchar_fd('0', 1);
+		}
+	}
+	if (data->number_str && data->number && data->point)
+	{
+		data->number_str -= len;
+		while (data->number_str > 0)
+		{
+			data->number_str--;
+			data->len_caraters++;
+			ft_putchar_fd('0', 1);
+		}
+	}
+	data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
+	va_end(cpy_arg);
+}
 
+static void add_format_comb_hastag_reverse(t_data *data, int *i)
+{
+	int			len;
+	int			len_cpy;
+	int			value;
+	int			number_str;
+	va_list 	cpy_arg;
+
+	va_copy(cpy_arg, data->args);
+	value = va_arg(cpy_arg, int);
+	len = ft_nblen(value, 16);
+	len_cpy = len;
+	data->len_caraters += 2;
+	if (data->str[*i] == 'x')
+	{
+		ft_putchar_fd('0', 1);
+		ft_putchar_fd('x', 1);
+	}
+	else
+	{
+		ft_putchar_fd('0', 1);
+		ft_putchar_fd('X', 1);
+	}
+	if (data->number_str && data->point && !data->number)
+	{
+		number_str = data->number_str - len;
+		while (number_str > 0)
+		{
+			number_str--;
+			data->len_caraters++;
+			ft_putchar_fd('0', 1);
+		}
+	}
+	if (data->number_str && data->point && data->number)
+	{
+		number_str = data->number_str - len;
+		while (number_str > 0)
+		{
+			number_str--;
+			data->len_caraters++;
+			ft_putchar_fd('0', 1);
+		}
+	}
+	data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
+	if (data->number && !data->number_str && !data->zero)
+	{
+		len += 2;
+		data->number -= len;
+		while (data->number)
+		{
+			data->number--;
+			data->len_caraters++;
+			ft_putchar_fd(' ', 1);
+		}
+	}
+	if (data->number && data->number_str && data->point)
+	{
+		if (data->number_str > len_cpy)
+			data->number = (data->number - 2) - data->number_str;
+		else
+			data->number = (data->number - 2) - len_cpy;			
+		while (data->number > 0)
+		{
+			data->number--;
+			data->len_caraters++;
+			ft_putchar_fd(' ', 1);
+		}
+	}
+	va_end(cpy_arg);
+}
 
 void	print_format(t_data *data, int *i)
 {
-	// '-', '0', '.', '#', ' ', '+'
 	if (data->space && !data->plas && !data->negative && !data->zero && !data->point && !data->hastag && !data->number)
 		add_format_one_space(data, i);
 	else if (data->plas && !data->space && !data->negative && !data->zero && !data->point && !data->hastag && !data->number && (data->str[*i] == 'i' || data->str[*i] == 'd' || data->str[*i] == 'p'))
@@ -336,107 +487,14 @@ void	print_format(t_data *data, int *i)
 	else if ((data->number || data->number_str) && data->negative && !data->hastag && (data->str[*i] == 's' || data->str[*i] == 'c'))
 		add_format_comb_str_reverse(data, i);
 	
-	else if (data->hastag && !data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
-	{
-		int			len;
-		int			len_cpy;
-		int			value;
-		bool		printed;
-		va_list 	cpy_arg;
+
 	
-		printed = false;
-		va_copy(cpy_arg, data->args);
-		value = va_arg(cpy_arg, int);
-		len = ft_nblen(value, 16);
-		len_cpy = len;
-		if (data->number && !data->number_str && !data->zero)
-		{
-			len += 2;
-			printed = true;
-			data->number -= len;
-			while (data->number)
-			{
-				data->number--;
-				data->len_caraters++;
-				ft_putchar_fd(' ', 1);
-			}
-		}
-		if (data->number && data->number_str && data->point)
-		{
-			if (data->number_str > len_cpy)
-				data->number = (data->number - 2) - data->number_str;
-			else
-				data->number = (data->number - 2) - len_cpy;
-			while (data->number > 0)
-			{
-				data->number--;
-				data->len_caraters++;
-				ft_putchar_fd(' ', 1);
-			}
-		}
-		data->len_caraters += 2;
-		if (data->str[*i] == 'x')
-		{
-			ft_putchar_fd('0', 1);
-			ft_putchar_fd('x', 1);
-		}
-		else
-		{
-			ft_putchar_fd('0', 1);
-			ft_putchar_fd('X', 1);
-		}
-		if (data->number && !printed && !data->number_str)
-		{
-			len += 2;
-			data->number -= len;
-			while (data->number > 0)
-			{
-				data->number--;
-				data->len_caraters++;
-				ft_putchar_fd('0', 1);
-			}
-		}
-		if (data->number_str && data->point && !data->number)
-		{	
-			data->number_str -= len;
-			while (data->number_str > 0)
-			{
-				data->number_str--;
-				data->len_caraters++;
-				ft_putchar_fd('0', 1);
-			}
-		}
-		if (data->number_str && data->number && data->point)
-		{
-			data->number_str -= len;
-			while (data->number_str > 0)
-			{
-				data->number_str--;
-				data->len_caraters++;
-				ft_putchar_fd('0', 1);
-			}
-		}
-		data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
-		va_end(cpy_arg);
-	}
-	/*else if (data->hastag && data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
-	{
-		'0x000000007b'
-	'    0x000000007b'
-		[7 1 7]      
-		data->len_caraters += 2;
-		if (data->str[*i] == 'x')
-		{
-			ft_putchar_fd('0', 1);
-			ft_putchar_fd('x', 1);
-		}
-		else
-		{
-			ft_putchar_fd('0', 1);
-			ft_putchar_fd('X', 1);
-		}
-		data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
-	}*/
+	else if (data->hastag && !data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
+		add_format_comb_hastag(data, i);
+	
+	else if (data->hastag && data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
+		add_format_comb_hastag_reverse(data, i);
+
 	else
 		data->len_caraters = ft_print_pars(data->str[*i], data->args, data->len_caraters, 0);
 }
