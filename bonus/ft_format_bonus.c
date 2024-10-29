@@ -339,6 +339,7 @@ void	print_format(t_data *data, int *i)
 	else if (data->hastag && !data->negative && (data->str[*i] == 'X' || data->str[*i] == 'x'))
 	{
 		int			len;
+		int			len_cpy;
 		int			value;
 		bool		printed;
 		va_list 	cpy_arg;
@@ -347,9 +348,10 @@ void	print_format(t_data *data, int *i)
 		va_copy(cpy_arg, data->args);
 		value = va_arg(cpy_arg, int);
 		len = ft_nblen(value, 16);
-		len += 2;
+		len_cpy = len;
 		if (data->number && !data->number_str && !data->zero)
 		{
+			len += 2;
 			printed = true;
 			data->number -= len;
 			while (data->number)
@@ -361,15 +363,15 @@ void	print_format(t_data *data, int *i)
 		}
 		if (data->number && data->number_str && data->point)
 		{
-			data->number -= len;
-			if (data->number > data->number_str)
+			if (data->number_str > len_cpy)
+				data->number = (data->number - 2) - data->number_str;
+			else
+				data->number = (data->number - 2) - len_cpy;
+			while (data->number > 0)
 			{
-				while (data->number > 0)
-				{
-					data->number--;
-					data->len_caraters++;
-					ft_putchar_fd(' ', 1);
-				}
+				data->number--;
+				data->len_caraters++;
+				ft_putchar_fd(' ', 1);
 			}
 		}
 		data->len_caraters += 2;
@@ -385,6 +387,7 @@ void	print_format(t_data *data, int *i)
 		}
 		if (data->number && !printed && !data->number_str)
 		{
+			len += 2;
 			data->number -= len;
 			while (data->number > 0)
 			{
@@ -394,8 +397,7 @@ void	print_format(t_data *data, int *i)
 			}
 		}
 		if (data->number_str && data->point && !data->number)
-		{
-			len -= 2;
+		{	
 			data->number_str -= len;
 			while (data->number_str > 0)
 			{
@@ -406,7 +408,6 @@ void	print_format(t_data *data, int *i)
 		}
 		if (data->number_str && data->number && data->point)
 		{
-			len -= 2;
 			data->number_str -= len;
 			while (data->number_str > 0)
 			{
